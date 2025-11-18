@@ -1,25 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>Borang Kemaskini Data ICT</title>
-</head>
+<head><meta charset="utf-8"><title>Parent Page</title></head>
 <body>
-  <iframe 
-    src="https://script.google.com/macros/s/AKfycbwZtHriah9ffISYEBGSo9cEg34VdWOeaNAJqgwLhPA5xvcZQAt0WOtNgkanVecm56_f/exec"
-    width="100%"
-    height="100%"
-    allowfullscreen="true"
-    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;">
-  </iframe>
+  <h1>Parent page embedding Apps Script</h1>
+
+  <!-- replace with your real exec URL only as the iframe src -->
+  <iframe id="as-iframe" src="https://script.google.com/macros/s/AKfycby6LLNJHiW96RidBpa9mQvmBBQxFcv2bH2SvRJFmru95Y9SPaFkUnH8ftg1SiWJ7biv/exec" width="100%" height="800"></iframe>
 
   <script>
-    window.onload = function() {
-      document.querySelector('iframe')
-        .requestFullscreen()
-        .catch((err) => {
-          console.error('Error attempting to enable full-screen mode:', err.message);
-        });
-    };
+    const iframe = document.getElementById('as-iframe');
+
+    // Send a request to the iframe to get clinic names (example)
+    function requestClinicNames(daerah, password) {
+      const requestId = Math.random().toString(36).slice(2);
+      iframe.contentWindow.postMessage({ type: 'getClinicNames', requestId, daerah, password }, '*');
+      return new Promise((resolve, reject) => {
+        function onMsg(ev) {
+          if (!ev.data || ev.data.requestId !== requestId) return;
+          window.removeEventListener('message', onMsg);
+          if (ev.data.ok) resolve(ev.data.data);
+          else reject(ev.data.error);
+        }
+        window.addEventListener('message', onMsg);
+      });
+    }
+
+    // Usage example: ask iframe for clinic names for Kota Bharu
+    // prompt for password or hardcode for testing:
+    const pw = prompt('Password for Kota Bharu (for demo):');
+    requestClinicNames('Kota Bharu', pw)
+      .then(names => console.log('Got clinic names', names))
+      .catch(err => console.error('Error from iframe', err));
   </script>
 </body>
 </html>
